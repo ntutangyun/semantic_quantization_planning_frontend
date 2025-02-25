@@ -12,7 +12,7 @@ const nextConfig = {
      *
      * @see https://nextjs.org/docs/app/api-reference/next-config-js/basePath
      */
-    basePath: "/semantic_quantization_planner",
+    basePath: "/semantic_quantization_planning_frontend",
 
     /**
      * Disable server-based image optimization. Next.js does not support
