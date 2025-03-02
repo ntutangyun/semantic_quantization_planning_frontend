@@ -11,7 +11,8 @@ export default function OTAConfig({otaConfig, setOtaConfig}) {
 
     return (
         <div className={"p-10"} id={"ota-config"}>
-            <h1 className={"text-2xl mb-5"}>Step 1: Over-the-Air Aggregation Channel Configuration</h1>
+            <div className="divider">Step 1: Over-the-Air Aggregation Channel Configuration</div>
+
             <div className="flex flex-row gap-5 items-center">
                 <p>Supported Quantization Levels</p>
                 <div className={"flex flex-row gap-8 items-center"}>
