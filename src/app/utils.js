@@ -3,38 +3,39 @@ export function getDefaultClientData() {
         supported_quantization_levels: [
             {
                 quantization_level: 4,
-                energy_consumption_percentage: 0.4,
+                energy_consumption_percentage: 0.03,
                 lag_s: 0.5,
-                accuracy_estimate: 0.8
+                accuracy_estimate: 0.73
             },
             {
                 quantization_level: 8,
-                energy_consumption_percentage: 0.6,
+                energy_consumption_percentage: 0.07,
                 lag_s: 1,
                 accuracy_estimate: 0.85
             },
             {
                 quantization_level: 16,
-                energy_consumption_percentage: 0.8,
+                energy_consumption_percentage: 0.48,
                 lag_s: 2,
-                accuracy_estimate: 0.9
+                accuracy_estimate: 0.88
             },
             {
                 quantization_level: 32,
                 energy_consumption_percentage: 1.0,
                 lag_s: 4,
-                accuracy_estimate: 0.95
+                accuracy_estimate: 0.90
             }
         ],
-        user_threshold: {
-            energy_threshold: 1.0,
-            lag_threshold: 5,
-            accuracy_threshold: 0.7
+        user_sensitivity: {
+            energy_sensitivity: "unknown",
+            latency_sensitivity: "unknown",
+            accuracy_sensitivity: "unknown"
+        },
+        user_usage: {
+            noise_level: "unknown",
+            interaction_frequency: "unknown",
+            interaction_types: "unknown",
         },
         user_chat_history: [],
-        user_contributions: {
-            no_training_samples_per_day: 5,
-            operation_context: "",
-        },
     }
 }

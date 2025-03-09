@@ -1,17 +1,17 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 
-export default function ClientInterface({currentClient, currentClientIndex, setClientsConfig}) {
+export default function ClientInterface({ currentClient, currentClientIndex, setClientsConfig }) {
     const [ws, setWs] = useState(null);
     const [chatInput, setChatInput] = useState("");
     const [connectionStatus, setConnectionStatus] = useState("Disconnected");
 
     const handleThresholdChange = (event) => {
-        const {name, value} = event.target;
+        const { name, value } = event.target;
         const parsedValue = parseFloat(value);
         setClientsConfig((prevConfig) => {
             const updatedClients = JSON.parse(JSON.stringify(prevConfig.clients));
             updatedClients[currentClientIndex].user_threshold[name] = parsedValue;
-            return {...prevConfig, clients: updatedClients};
+            return { ...prevConfig, clients: updatedClients };
         });
     };
 
@@ -31,8 +31,9 @@ export default function ClientInterface({currentClient, currentClientIndex, setC
             ws.onclose = () => {
                 setConnectionStatus("Disconnected");
             };
-            ws.onerror = () => {
+            ws.onerror = (e) => {
                 setConnectionStatus("Error");
+                alert(`Failed to establish websocket connection with the backend server:  ${e}`);
             };
             ws.onmessage = (event) => {
                 console.log(event.data);
@@ -42,14 +43,23 @@ export default function ClientInterface({currentClient, currentClientIndex, setC
                     setClientsConfig((prevConfig) => {
                         const updatedClients = JSON.parse(JSON.stringify(prevConfig.clients));
                         updatedClients[currentClientIndex].user_chat_history.push(messageBody.data);
-                        return {...prevConfig, clients: updatedClients};
+                        return { ...prevConfig, clients: updatedClients };
                     });
-                } else if (messageBody.type === "user-interview-completed") {
-                    console.log("received user interview complete message: ", messageBody.data.content);
+                } else if (messageBody.type === "user-interview-summary") {
+                    console.log("received user interview complete message: ", messageBody.data);
+
+                    const interviewSummary = messageBody.data;
+
                     setClientsConfig((prevConfig) => {
                         const updatedClients = JSON.parse(JSON.stringify(prevConfig.clients));
-                        updatedClients[currentClientIndex].user_chat_history.push(messageBody.data);
-                        return {...prevConfig, clients: updatedClients};
+                        updatedClients[currentClientIndex].user_chat_history.push({"role": "assistant", "content": "User interview completed. Thank you for your time."});
+                        updatedClients[currentClientIndex].user_usage.noise_level = interviewSummary.noise_level;
+                        updatedClients[currentClientIndex].user_usage.interaction_frequency = interviewSummary.interaction_frequency;
+                        updatedClients[currentClientIndex].user_usage.interaction_types = interviewSummary.interaction_types;
+                        updatedClients[currentClientIndex].user_sensitivity.energy_sensitivity = interviewSummary.energy_sensitivity;
+                        updatedClients[currentClientIndex].user_sensitivity.accuracy_sensitivity = interviewSummary.accuracy_sensitivity;
+                        updatedClients[currentClientIndex].user_sensitivity.latency_sensitivity = interviewSummary.latency_sensitivity;
+                        return { ...prevConfig, clients: updatedClients };
                     });
                     ws.close();
                 } else {
@@ -58,16 +68,6 @@ export default function ClientInterface({currentClient, currentClientIndex, setC
             }
         }
     }, [ws]);
-
-    const isQuantizationLevelUserThresholdFiltered = (level) => {
-        const {accuracy_threshold, energy_threshold, lag_threshold} = currentClient.user_threshold;
-        return (
-            level.accuracy_estimate >= accuracy_threshold &&
-            level.energy_consumption_percentage <= energy_threshold &&
-            level.lag_s <= lag_threshold
-        );
-    };
-
 
     const handleSendMessage = () => {
         console.log("sending message: ", chatInput);
@@ -93,7 +93,7 @@ export default function ClientInterface({currentClient, currentClientIndex, setC
             setClientsConfig((prevConfig) => {
                 const updatedClients = JSON.parse(JSON.stringify(prevConfig.clients));
                 updatedClients[currentClientIndex].user_chat_history.push(message.data);
-                return {...prevConfig, clients: updatedClients};
+                return { ...prevConfig, clients: updatedClients };
             });
             setChatInput("");
         }
@@ -105,24 +105,58 @@ export default function ClientInterface({currentClient, currentClientIndex, setC
         }
     };
 
+    const onClientConfigInputChange = (category, field, value) => {
+        setClientsConfig((prevConfig) => {
+            const updatedClients = JSON.parse(JSON.stringify(prevConfig.clients));
+            updatedClients[currentClientIndex][category][field] = value;
+            return { ...prevConfig, clients: updatedClients };
+        });
+    };
+
+    const generateLevelRadioControls = (title, radioName, value, onChangeHandler) => {
+        return (
+            <div className="form-control flex flex-row gap-3 items-center">
+                <div>{title}</div>
+                <label className="label cursor-pointer">
+                    <input type="radio" name={radioName} className="radio" value="unknown"
+                        onChange={onChangeHandler}
+                        checked={value === "unknown"} />
+                    <span className="label-text mx-2">Unknown</span>
+                </label>
+                <label className="label cursor-pointer">
+                    <input type="radio" name={radioName} className="radio" value="low"
+                        onChange={onChangeHandler}
+                        checked={value === "low"} />
+                    <span className="label-text mx-2">Low</span>
+                </label>
+                <label className="label cursor-pointer">
+                    <input type="radio" name={radioName} className="radio" value="high"
+                        onChange={onChangeHandler}
+                        checked={value === "high"} />
+                    <span className="label-text mx-2">High</span>
+                </label>
+            </div>
+        )
+    }
+
     return <div className={"px-10"}>
         <div className="divider">Step 3: Client Interface</div>
 
         {currentClient && (
             <div>
-                <div className={"grid grid-cols-3 gap-3"}>
-                    <div className={"flex flex-col gap-2"}>
+                <div className={"flex flex-row gap-3"}>
+                    <div className={"flex flex-col gap-2 flex-grow"}>
                         <h2 className={"text-xl"}>Supported Quantization Levels</h2>
                         <sub className={"mb-2"}>Note that the accuracy, energy and latency are estimated based on the
                             extracted hardware
                             setup.</sub>
                         {currentClient.supported_quantization_levels.map((level, index) => (
                             <div
-                                className={`stats shadow w-full ${isQuantizationLevelUserThresholdFiltered(level) ? "bg-green-900" : ""}`}
+                                className={`stats shadow w-full}`}
                                 key={index}>
                                 <div className="stat">
-                                    <div className="stat-title">Quantization</div>
-                                    <div className="stat-value text-primary">{level.quantization_level} BIT</div>
+                                    <div className="stat-title">BIT</div>
+                                    <div className="stat-value text-primary">{level.quantization_level}</div>
                                     <div className="stat-desc"></div>
                                 </div>
                                 <div className="stat">
@@ -133,7 +167,7 @@ export default function ClientInterface({currentClient, currentClientIndex, setC
                                 <div className="stat">
                                     <div className="stat-title">Energy Cost</div>
                                     <div
-                                        className="stat-value text-secondary">{level.energy_consumption_percentage * 100} %
+                                        className="stat-value text-secondary">{Math.round(level.energy_consumption_percentage * 100)} %
                                     </div>
                                 </div>
 
@@ -145,64 +179,31 @@ export default function ClientInterface({currentClient, currentClientIndex, setC
                         ))}
 
                         <div className={"flex flex-col gap-2"}>
-                            <h2 className={"text-xl"}>User Threshold</h2>
-                            <sub>Drag the slider to adjust the user thresholds. Satisfied
-                                quantization levels will be
-                                highlighted.</sub>
-                            <div className="stats shadow w-full">
-                                <div className="stat">
-                                    <div className="stat-title">Accuracy</div>
-                                    <input
-                                        type="range"
-                                        name="accuracy_threshold"
-                                        min="0"
-                                        max="1"
-                                        step="0.01"
-                                        value={currentClient.user_threshold.accuracy_threshold}
-                                        onChange={handleThresholdChange}
-                                        className="range range-info"
-                                    />
-                                    <div
-                                        className="stat-value text-info">{currentClient.user_threshold.accuracy_threshold}</div>
-                                </div>
-                                <div className="stat">
-                                    <div className="stat-title">Energy</div>
-                                    <input
-                                        type="range"
-                                        name="energy_threshold"
-                                        min="0"
-                                        max="1"
-                                        step="0.01"
-                                        value={currentClient.user_threshold.energy_threshold}
-                                        onChange={handleThresholdChange}
-                                        className="range range-secondary"
-                                    />
-                                    <div
-                                        className="stat-value text-secondary">{currentClient.user_threshold.energy_threshold * 100} %
-                                    </div>
-                                </div>
-                                <div className="stat">
-                                    <div className="stat-title">Latency</div>
-                                    <input
-                                        type="range"
-                                        name="lag_threshold"
-                                        min="0"
-                                        max="10"
-                                        step="0.1"
-                                        value={currentClient.user_threshold.lag_threshold}
-                                        onChange={handleThresholdChange}
-                                        className="range"
-                                    />
-                                    <div
-                                        className="stat-value">{currentClient.user_threshold.lag_threshold} s
-                                    </div>
-                                </div>
-
+                            <h2 className={"text-xl"}>User Usage</h2>
+                            {generateLevelRadioControls("Noise Level", "radio-noise-level",
+                                currentClient.user_usage.noise_level, (e) => onClientConfigInputChange("user_usage", "noise_level", e.target.value))}
+                            {generateLevelRadioControls("Interaction Frequency", "radio-interaction-frequency",
+                                currentClient.user_usage.interaction_frequency, (e) => onClientConfigInputChange("user_usage", "interaction_frequency", e.target.value))}
+                            <div className="form-control">
+                                <div>Interaction Types</div>
+                                <textarea className="textarea h-24 textarea-bordered"
+                                        value={currentClient.user_usage.interaction_types}
+                                        onChange={(e) => onClientConfigInputChange("user_usage", "interaction_types", e.target.value)}></textarea>
                             </div>
+                        </div>
+
+                        <div className={"flex flex-col gap-2"}>
+                            <h2 className={"text-xl"}>User Preference</h2>
+                            {generateLevelRadioControls("Energy Sensitivity", "radio-energy-sensitivity",
+                                currentClient.user_sensitivity.energy_sensitivity, (e) => onClientConfigInputChange("user_sensitivity", "energy_sensitivity", e.target.value))}
+                            {generateLevelRadioControls("Latency Sensitivity", "radio-latency-sensitivity",
+                                currentClient.user_sensitivity.latency_sensitivity, (e) => onClientConfigInputChange("user_sensitivity", "latency_sensitivity", e.target.value))}
+                            {generateLevelRadioControls("Accuracy Sensitivity", "radio-accuracy-sensitivity",
+                                currentClient.user_sensitivity.accuracy_sensitivity, (e) => onClientConfigInputChange("user_sensitivity", "accuracy_sensitivity", e.target.value))}
                         </div>
                     </div>
 
-                    <div className={"col-span-2"}>
+                    <div className={"w-[60rem]"}>
                         <div className={"flex flex-row gap-3 items-center"}>
                             <h2 className={"text-xl"}>Chat</h2>
                             <button className={"btn btn-outline btn-sm"} onClick={onStartConversation}>Start
@@ -214,7 +215,7 @@ export default function ClientInterface({currentClient, currentClientIndex, setC
                             </span>
                         </div>
 
-                        <div className={"h-[40rem] bg-slate-950 my-2 overflow-y-auto"}>
+                        <div className={"h-[40rem]  bg-slate-950 my-2 overflow-y-auto"}>
                             {currentClient.user_chat_history.map((message, index) => {
                                 if (message.role === "user") {
                                     return <div className="chat chat-end" key={index}>
@@ -227,10 +228,11 @@ export default function ClientInterface({currentClient, currentClientIndex, setC
                                 }
                             })}
                         </div>
+
                         <div className={"flex flex-row gap-3 items-center"}>
                             <input type="text" className={"input input-bordered w-full"} value={chatInput}
-                                   onChange={(e) => setChatInput(e.target.value)}
-                                   onKeyUp={handleKeyUp}/>
+                                onChange={(e) => setChatInput(e.target.value)}
+                                onKeyUp={handleKeyUp} />
                             <button className={"btn btn-outline"} onClick={handleSendMessage}>
                                 Send
                             </button>
