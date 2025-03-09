@@ -20,9 +20,6 @@ export default function FederationServerInterface({ clientsConfig, setClientsCon
                 case "low":
                     user_energy_sensitivity_gain = 0.1;
                     break;
-                case "medium":
-                    user_energy_sensitivity_gain = 0.2;
-                    break;
                 case "high":
                     user_energy_sensitivity_gain = 0.3;
                     break;
@@ -33,9 +30,6 @@ export default function FederationServerInterface({ clientsConfig, setClientsCon
             switch(client.user_sensitivity.latency_sensitivity) {
                 case "low":
                     user_latency_sensitivity_gain = 0.1;
-                    break;
-                case "medium":
-                    user_latency_sensitivity_gain = 0.2;
                     break;
                 case "high":
                     user_latency_sensitivity_gain = 0.3;
@@ -48,9 +42,6 @@ export default function FederationServerInterface({ clientsConfig, setClientsCon
                 case "low":
                     user_accuracy_sensitivity_gain = 0.1;
                     break;
-                case "medium":
-                    user_accuracy_sensitivity_gain = 0.2;
-                    break;
                 case "high":
                     user_accuracy_sensitivity_gain = 0.3;
                     break;
@@ -62,9 +53,6 @@ export default function FederationServerInterface({ clientsConfig, setClientsCon
                 case "low":
                     user_noise_level_gain = 0.1;
                     break;
-                case "medium":
-                    user_noise_level_gain = 0.2;
-                    break;
                 case "high":
                     user_noise_level_gain = 0.3;
                     break;
@@ -75,9 +63,6 @@ export default function FederationServerInterface({ clientsConfig, setClientsCon
             switch(client.user_usage.interaction_frequency) {
                 case "low":
                     user_interaction_frequency_gain = 0.1;
-                    break;
-                case "medium":
-                    user_interaction_frequency_gain = 0.2;
                     break;
                 case "high":
                     user_interaction_frequency_gain = 0.3;
