@@ -6,6 +6,7 @@ import ClientsConfig from "@/app/ClientsConfig";
 
 import HeroBackgroundImage from "@/media/DALL·E-hero-image.webp"
 import ClientInterface from "@/app/ClientInterface";
+import FederationServerInterface from "@/app/FederationServerInterface";
 
 export default function Home() {
     const [otaConfig, setOtaConfig] = useState({
@@ -54,6 +55,8 @@ export default function Home() {
                                  currentClientIndex={currentClientIndex}
                                  setClientsConfig={setClientsConfig}/>
             }
+
+            <FederationServerInterface clientsConfig={clientsConfig} setClientsConfig={setClientsConfig}/>  
 
         </main>
         <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center mb-5">

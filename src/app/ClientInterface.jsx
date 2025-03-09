@@ -19,6 +19,14 @@ export default function ClientInterface({ currentClient, currentClientIndex, set
         if (ws) {
             ws.close();
         }
+
+        // reset client chat history
+        setClientsConfig((prevConfig) => {
+            const updatedClients = JSON.parse(JSON.stringify(prevConfig.clients));
+            updatedClients[currentClientIndex].user_chat_history = [];
+            return { ...prevConfig, clients: updatedClients };
+        });
+
         const newWs = new WebSocket("ws://localhost:8765");
         setWs(newWs);
     };
@@ -52,7 +60,7 @@ export default function ClientInterface({ currentClient, currentClientIndex, set
 
                     setClientsConfig((prevConfig) => {
                         const updatedClients = JSON.parse(JSON.stringify(prevConfig.clients));
-                        updatedClients[currentClientIndex].user_chat_history.push({"role": "assistant", "content": "User interview completed. Thank you for your time."});
+                        updatedClients[currentClientIndex].user_chat_history.push({ "role": "assistant", "content": "User interview completed. Thank you for your time." });
                         updatedClients[currentClientIndex].user_usage.noise_level = interviewSummary.noise_level;
                         updatedClients[currentClientIndex].user_usage.interaction_frequency = interviewSummary.interaction_frequency;
                         updatedClients[currentClientIndex].user_usage.interaction_types = interviewSummary.interaction_types;
@@ -140,8 +148,6 @@ export default function ClientInterface({ currentClient, currentClientIndex, set
     }
 
     return <div className={"px-10"}>
-        <div className="divider">Step 3: Client Interface</div>
-
         {currentClient && (
             <div>
                 <div className={"flex flex-row gap-3"}>
@@ -187,8 +193,8 @@ export default function ClientInterface({ currentClient, currentClientIndex, set
                             <div className="form-control">
                                 <div>Interaction Types</div>
                                 <textarea className="textarea h-24 textarea-bordered"
-                                        value={currentClient.user_usage.interaction_types}
-                                        onChange={(e) => onClientConfigInputChange("user_usage", "interaction_types", e.target.value)}></textarea>
+                                    value={currentClient.user_usage.interaction_types}
+                                    onChange={(e) => onClientConfigInputChange("user_usage", "interaction_types", e.target.value)}></textarea>
                             </div>
                         </div>
 
@@ -206,8 +212,8 @@ export default function ClientInterface({ currentClient, currentClientIndex, set
                     <div className={"w-[60rem]"}>
                         <div className={"flex flex-row gap-3 items-center"}>
                             <h2 className={"text-xl"}>Chat</h2>
-                            <button className={"btn btn-outline btn-sm"} onClick={onStartConversation}>Start
-                                Conversation
+                            <button className={"btn btn-outline btn-sm"} onClick={onStartConversation}
+                                disabled={connectionStatus === "Connected"}>Start Conversation
                             </button>
                             <span
                                 className={`ml-2 ${connectionStatus === "Connected" ? "text-green-500" : connectionStatus === "Error" ? "text-red-500" : "text-gray-500"}`}>
