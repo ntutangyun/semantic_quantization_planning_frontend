@@ -7,7 +7,7 @@ export default function FederationServerInterface({ clientsConfig, setClientsCon
     
     useEffect(() => {
         const tableData = [];
-        clientsConfig.clients.forEach((client, index) => {
+        clientsConfig.clients.forEach((client, clientIndex) => {
     
             let user_energy_sensitivity_gain = 0;
             let user_latency_sensitivity_gain = 0;
@@ -73,7 +73,7 @@ export default function FederationServerInterface({ clientsConfig, setClientsCon
 
             client.supported_quantization_levels.forEach((level) => {
                 tableData.push({
-                    clientId: client.clientId,
+                    clientId: "Client " + (clientIndex + 1),
                     quantizationLevel: level.quantization_level,
                     benefit: getRandomInt(1, 10),
                     cost: getRandomInt(1, 10),
@@ -90,7 +90,6 @@ export default function FederationServerInterface({ clientsConfig, setClientsCon
             {/* head */}
             <thead>
                 <tr>
-                    <th></th>
                     <th>Client ID</th>
                     <th>Quantization Level</th>
                     <th>Benefit</th>
@@ -100,7 +99,6 @@ export default function FederationServerInterface({ clientsConfig, setClientsCon
             <tbody>
                 {clientQuantizationTableData.map((row, index) => (
                     <tr key={index}>
-                        <td>{index + 1}</td>
                         <td>{row.clientId}</td>
                         <td>{row.quantizationLevel}</td>
                         <td>{row.benefit}</td>
