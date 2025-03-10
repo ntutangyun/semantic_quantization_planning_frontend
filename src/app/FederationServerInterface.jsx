@@ -14,7 +14,17 @@ export default function FederationServerInterface({ clientsConfig, setClientsCon
             let user_accuracy_sensitivity_gain = 0;
             let user_noise_level_gain = 0;
             let user_interaction_frequency_gain = 0;
-            let user_interaction_types_gain = 0;
+            
+            // TODO:　incorporate the estimated contribution based on user's usage patterns and quantization level:
+            // make use of the data below which is estimated by LLM according previous user feedbacks in the RAG database
+            // context_quantization_contribution_evaluation: {
+            //     4: "unknown", or "low" or "high"
+            //     6: "unknown", or "low" or "high"
+            //     8: "unknown", or "low" or "high"
+            //     12: "unknown", or "low" or "high"
+            //     16: "unknown", or "low" or "high"
+            //     32: "unknown" or "low" or "high"
+            // },
 
             switch(client.user_sensitivity.energy_sensitivity) {
                 case "low":
