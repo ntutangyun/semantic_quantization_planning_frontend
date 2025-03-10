@@ -26,6 +26,14 @@ export function getDefaultClientData() {
                 accuracy_estimate: 0.90
             }
         ],
+        context_quantization_contribution_evaluation: {
+            4: "unknown",
+            6: "unknown",
+            8: "unknown",
+            12: "unknown",
+            16: "unknown",
+            32: "unknown"
+        },
         user_sensitivity: {
             energy_sensitivity: "unknown",
             latency_sensitivity: "unknown",

@@ -1,4 +1,4 @@
-"use client"; // This is a client component 👈🏽
+"use client";
 
 import OTAConfig from "@/app/OTAConfig";
 import {useState} from "react";

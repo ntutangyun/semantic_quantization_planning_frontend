@@ -5,16 +5,6 @@ export default function ClientInterface({ currentClient, currentClientIndex, set
     const [chatInput, setChatInput] = useState("");
     const [connectionStatus, setConnectionStatus] = useState("Disconnected");
 
-    const handleThresholdChange = (event) => {
-        const { name, value } = event.target;
-        const parsedValue = parseFloat(value);
-        setClientsConfig((prevConfig) => {
-            const updatedClients = JSON.parse(JSON.stringify(prevConfig.clients));
-            updatedClients[currentClientIndex].user_threshold[name] = parsedValue;
-            return { ...prevConfig, clients: updatedClients };
-        });
-    };
-
     const onStartConversation = () => {
         if (ws) {
             ws.close();
@@ -60,7 +50,8 @@ export default function ClientInterface({ currentClient, currentClientIndex, set
 
                     setClientsConfig((prevConfig) => {
                         const updatedClients = JSON.parse(JSON.stringify(prevConfig.clients));
-                        updatedClients[currentClientIndex].user_chat_history.push({ "role": "assistant", "content": "User interview completed. Thank you for your time." });
+                        updatedClients[currentClientIndex].user_chat_history.push({ "role": "assistant", "content": "User interview completed. Thank you for your input." });
+                        updatedClients[currentClientIndex].user_chat_history.push({ "role": "assistant", "content": "Now I'm estimating the best configuration (the potential contribution for each quantization level) for you ..."});
                         updatedClients[currentClientIndex].user_usage.noise_level = interviewSummary.noise_level;
                         updatedClients[currentClientIndex].user_usage.interaction_frequency = interviewSummary.interaction_frequency;
                         updatedClients[currentClientIndex].user_usage.interaction_types = interviewSummary.interaction_types;
@@ -69,6 +60,18 @@ export default function ClientInterface({ currentClient, currentClientIndex, set
                         updatedClients[currentClientIndex].user_sensitivity.latency_sensitivity = interviewSummary.latency_sensitivity;
                         return { ...prevConfig, clients: updatedClients };
                     });
+                } else if (messageBody.type === "context-quantization-evaluation-result") {
+                    console.log("received quantization evaluation result: ", messageBody.data);
+
+                    const evaluationResult = messageBody.data;
+                    setClientsConfig((prevConfig) => {
+                        const updatedClients = JSON.parse(JSON.stringify(prevConfig.clients));
+                        const newClientConfig = updatedClients[currentClientIndex];
+                        newClientConfig.user_chat_history.push({ "role": "assistant", "content": "Done! Your context is well understood. Thank you again for using the smart home hub. (The user is ready to participate the next round of federated learning when the appropriate qunatization level will be planned for the user)." });
+                        newClientConfig.context_quantization_contribution_evaluation = evaluationResult;
+                        return { ...prevConfig, clients: updatedClients };
+                    });
+
                     ws.close();
                 } else {
                     console.error("Unknown message type: ", messageBody.type);
